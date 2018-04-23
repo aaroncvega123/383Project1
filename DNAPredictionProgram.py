@@ -115,7 +115,8 @@ def main():
     
     load_data_into_sequences()
     load_sequences_into_traits()
-    #train_program()
-    print(len(trait_sets))
+    train_program()
+    print("Done training")
+    #print(len(targets))
 
 main()
