@@ -96,7 +96,7 @@ def set_sequences_from_seq1Data():
     return 1
 
 def train_program():
-    clf.fit(trait_sets, targets)  
+    clf.fit(trait_sets[:-1], targets[:-1])  
 
 """
 def all_equal_length():
@@ -107,16 +107,41 @@ def all_equal_length():
             return False
     return True
 """
+def predict_sequence(j):
+    ret = []
+
+    seq_length = len(sequences[0])
+
+    for i in range(seq_length):
+        trait_set = []
+        trait_set.append([])
+
+        for k in range(trait_length):
+            base = sequences[sets_desired+j+k][i]
+            trait_set[0].append(base)
+
+        ret.append(clf.predict(trait_set)[0])
+    
+    return ret
+
+            
+
 
 def main():
     """
     Code goes here
     """
-    
+
+    print("Program started...")
     load_data_into_sequences()
+    print("Done loading sequences")
     load_sequences_into_traits()
+    print("Done loading into traits")
     train_program()
     print("Done training")
-    #print(len(targets))
+    predictedSeq = predict_sequence(1)
+    print("Done predicting")
+
+    print(predictedSeq)
 
 main()
