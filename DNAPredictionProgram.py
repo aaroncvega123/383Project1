@@ -2,7 +2,7 @@
 from sklearn import svm
 
 trait_length = 20
-sets_desired = 80
+sets_desired = 190
 
 trait_sets = []
 targets = []
@@ -23,11 +23,11 @@ def load_data_into_sequences():
     """
     Will read from fasta file and fill sequences
     """
-    seq_file = open("aligned_fasta_H3N2A_23APR2018.aln", 'r')
+    seq_file = open("CLEAN_RAW_H3N2_ALIGNED.fasta", 'r')
     raw_data = seq_file.readlines()
     current_seq = []
 
-    standard_length = 1737
+    standard_length = 2832
     #print(standard_length)
 
     for line in raw_data:
@@ -43,13 +43,13 @@ def load_data_into_sequences():
         else:
             for base in line:
 
-                if base == 'a':
+                if base == 'a' or base == 'A':
                     current_seq.append(1)
-                elif base == 't':
+                elif base == 't' or base == 'T':
                     current_seq.append(2)
-                elif base == 'c':
+                elif base == 'c' or base == 'C':
                     current_seq.append(3)
-                elif base == 'g':
+                elif base == 'g' or base == 'G':
                     current_seq.append(4)
                 elif base == '-':
                     current_seq.append(0)
@@ -98,7 +98,7 @@ def set_sequences_from_seq1Data():
 def train_program():
     clf.fit(trait_sets[:-1], targets[:-1])  
 
-"""
+
 def all_equal_length():
     length = len(sequences[0])
     for seq in sequences:
@@ -106,7 +106,7 @@ def all_equal_length():
         if len(seq) != length:
             return False
     return True
-"""
+
 def predict_sequence(j):
     ret = []
 
@@ -124,7 +124,16 @@ def predict_sequence(j):
     
     return ret
 
+def storeCLF(fileName):
+    import cPickle
+    with open(fileName, 'wb') as fid:
+        cPickle.dump(clf, fid)
             
+def loadCLF(fileName):
+    import cPickle
+    with open(fileName, 'rb') as fid:
+        ret = cPickle.load(fid)
+    return ret
 
 
 def main():
@@ -132,13 +141,21 @@ def main():
     Code goes here
     """
 
+
     print("Program started...")
+
     load_data_into_sequences()
     print("Done loading sequences")
+
     load_sequences_into_traits()
     print("Done loading into traits")
+
     train_program()
     print("Done training")
+
+    storeCLF('2016_clf.pkl')
+    print("Done storing clf")
+
     predictedSeq = predict_sequence(1)
     print("Done predicting")
 
