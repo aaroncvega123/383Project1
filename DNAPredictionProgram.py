@@ -1,8 +1,8 @@
 #from seq1Data import sequences as sq
 from sklearn import svm
 
-trait_length = 20
-sets_desired = 190
+trait_length = 5
+sets_desired = 195
 
 trait_sets = []
 targets = []
@@ -19,15 +19,15 @@ Should load all DNA sequences into 'sequences' as numbers.
     C = 3
     G = 4
 """
-def load_data_into_sequences():
+def load_data_into_sequences(fileName):
     """
     Will read from fasta file and fill sequences
     """
-    seq_file = open("CLEAN_RAW_H3N2_ALIGNED.fasta", 'r')
+    seq_file = open(fileName, 'r')
     raw_data = seq_file.readlines()
     current_seq = []
 
-    standard_length = 2832
+    standard_length = 2850
     #print(standard_length)
 
     for line in raw_data:
@@ -96,6 +96,7 @@ def set_sequences_from_seq1Data():
     return 1
 
 def train_program():
+    clf = svm.SVC(gamma=0.001, C=100.)
     clf.fit(trait_sets[:-1], targets[:-1])  
 
 
@@ -125,12 +126,12 @@ def predict_sequence(j):
     return ret
 
 def storeCLF(fileName):
-    import cPickle
+    import _pickle as cPickle
     with open(fileName, 'wb') as fid:
         cPickle.dump(clf, fid)
             
 def loadCLF(fileName):
-    import cPickle
+    import _pickle as cPickle
     with open(fileName, 'rb') as fid:
         ret = cPickle.load(fid)
     return ret
@@ -140,25 +141,48 @@ def main():
     """
     Code goes here
     """
-
+    trait_sets = []
+    targets = []
+    sequences = []
 
     print("Program started...")
 
-    load_data_into_sequences()
-    print("Done loading sequences")
 
+    load_data_into_sequences('CLEAN_RAW_H3N2_ALIGNED.fasta')
+    print("Done loading sequences")
     load_sequences_into_traits()
     print("Done loading into traits")
-
     train_program()
     print("Done training")
-
-    storeCLF('2016_clf.pkl')
+    storeCLF('2016_clf-2.pkl')
     print("Done storing clf")
 
-    predictedSeq = predict_sequence(1)
-    print("Done predicting")
+    trait_sets = []
+    targets = []
+    sequences = []
 
-    print(predictedSeq)
+    load_data_into_sequences('CLEAN_RAW_2017_H3N2_ALIGNED.fasta')
+    print("Done loading sequences")
+    load_sequences_into_traits()
+    print("Done loading into traits")
+    train_program()
+    print("Done training")
+    storeCLF('2017_clf.pkl')
+    print("Done storing clf")
+
+    trait_sets = []
+    targets = []
+    sequences = []
+
+    load_data_into_sequences('CLEAN_RAW_2018_H3N2_ALIGNED.fasta')
+    print("Done loading sequences")
+    load_sequences_into_traits()
+    print("Done loading into traits")
+    train_program()
+    print("Done training")
+    storeCLF('2018_clf.pkl')
+    print("Done storing clf")
+
+
 
 main()
