@@ -1,8 +1,8 @@
 #from seq1Data import sequences as sq
 from sklearn import svm
 
-trait_length = 140
-sets_desired = 50
+trait_length = 170
+sets_desired = 20
 
 trait_sets = []
 targets = []
@@ -27,7 +27,7 @@ def load_data_into_sequences(fileName):
     raw_data = seq_file.readlines()
     current_seq = []
 
-    standard_length = 2850
+    standard_length = 2900
     #print(standard_length)
 
     for line in raw_data:
@@ -98,6 +98,7 @@ def set_sequences_from_seq1Data():
 def train_program():
     clf = svm.SVC(gamma=0.001, C=100.)
     clf.fit(trait_sets[:-1], targets[:-1])  
+    return clf
 
 
 def all_equal_length():
@@ -108,7 +109,7 @@ def all_equal_length():
             return False
     return True
 
-def predict_sequence(j):
+def predict_sequence(j, clf):
     ret = []
 
     seq_length = len(sequences[0])
@@ -141,45 +142,29 @@ def main():
     """
     Code goes here
     """
-    trait_sets = []
-    targets = []
-    sequences = []
 
+    """
     print("Program started...")
-
-
-    load_data_into_sequences('CLEAN_RAW_H3N2_ALIGNED.fasta')
-    print("Done loading sequences")
-    load_sequences_into_traits()
-    print("Done loading into traits")
-    train_program()
-    print("Done training")
-    print(predict_sequence(1))
-
-    trait_sets = []
-    targets = []
-    sequences = []
 
     load_data_into_sequences('CLEAN_RAW_2017_H3N2_ALIGNED.fasta')
     print("Done loading sequences")
     load_sequences_into_traits()
     print("Done loading into traits")
-    train_program()
+    clf = train_program()
     print("Done training")
-    print(predict_sequence(1))
+    print(predict_sequence(1,clf))
+    
+    """
 
-    trait_sets = []
-    targets = []
-    sequences = []
 
     load_data_into_sequences('CLEAN_RAW_2018_H3N2_ALIGNED.fasta')
     print("Done loading sequences")
     load_sequences_into_traits()
     print("Done loading into traits")
-    train_program()
+    clf = train_program()
     print("Done training")
-    print(predict_sequence(1))
-
+    print(predict_sequence(1,clf))
+    
 
 
 main()
