@@ -1,14 +1,17 @@
 #from seq1Data import sequences as sq
 from sklearn import svm
+import os.path
 
-trait_length = 170
-sets_desired = 20
+#trait_length = 170
+#sets_desired = 20
 
 trait_sets = []
 targets = []
 sequences = [] #should be 2D list with all sequences
 
 clf = svm.SVC(gamma=0.001, C=100.)
+
+states = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado', 'Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho', 'Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana', 'Maine', 'Maryland','Massachusetts','Michigan','Minnesota','Mississippi', 'Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South  Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming']
 
 
 """
@@ -27,7 +30,6 @@ def load_data_into_sequences(fileName):
     raw_data = seq_file.readlines()
     current_seq = []
 
-    standard_length = 2900
     #print(standard_length)
 
     for line in raw_data:
@@ -77,6 +79,7 @@ Example:    If we have these sequences:
 
 def load_sequences_into_traits():
     #assuming all sequences have equal size
+    print(trait_length)
     seq_length = len(sequences[0])
 
     for i in range(seq_length):
@@ -137,35 +140,100 @@ def loadCLF(fileName):
         ret = cPickle.load(fid)
     return ret
 
+def seqToFile(seq, f):
+    for number in seq:
+        base = '-'
+        if number == 1:
+            base = 'A'
+        elif number == 2:
+            base = 'T'
+        elif number == 3:
+            base = 'C'
+        elif number == 4:
+            base = 'G'
+        f.write(base)
+    f.close()
+
+def fastaFileLength(f):
+    count = 0
+    for line in f.readlines():
+        if line[0] == '>':
+            count = count + 1
+    return count
+
+def fastaFileMaxSeqLength(f):
+    maxLength = 0
+    current_seq = ""
+
+    for line in f.readlines():
+        if line[0] != '>':
+            current_seq = current_seq + line
+        else:
+            if len(current_seq) > maxLength:
+                maxLength = len(current_seq)
+            current_seq = ""
+
+    return maxLength
+            
+trait_length = 170
+sets_desired = 20
+standard_length = 4000
+
+skippable = [['2015','Alabama']]
 
 def main():
     """
     Code goes here
     """
+    global trait_sets
+    global targets
 
-    """
-    print("Program started...")
+    years = ['2015', '2016', '2017']
+    for year in years:
+        for state in states:
+            block = [year, state]
+            if block in skippable:
+                continue
 
-    load_data_into_sequences('CLEAN_RAW_2017_H3N2_ALIGNED.fasta')
-    print("Done loading sequences")
-    load_sequences_into_traits()
-    print("Done loading into traits")
-    clf = train_program()
-    print("Done training")
-    print(predict_sequence(1,clf))
-    
-    """
+            global trait_length
+            global standard_length
 
+            inputFileName = year + "_"
+            inputFileName = inputFileName + state + "_H3N2_Strains.fasta"
+            
+            f = open(inputFileName, "r")
+            lengthOfFile = fastaFileLength(f)
+            trait_length = lengthOfFile/2
+            if trait_length > 170:
+                trait_length = 170
 
-    load_data_into_sequences('CLEAN_RAW_2018_H3N2_ALIGNED.fasta')
-    print("Done loading sequences")
-    load_sequences_into_traits()
-    print("Done loading into traits")
-    clf = train_program()
-    print("Done training")
-    print(predict_sequence(1,clf))
-    
+            f = open(inputFileName, "r")
+            standard_length = fastaFileMaxSeqLength(f)
+            print(standard_length)
 
+            trait_sets = []
+            targets = []
+
+            f = open(inputFileName, "r")
+            outputFileName = year + "_" + state + "_result.txt"
+
+            if os.path.isfile(outputFileName):
+                if os.stat(outputFileName).st_size != 0:
+                    print(outputFileName + " skipped")
+                    continue
+
+            try:
+                outputFile = open(outputFileName, "w")
+                load_data_into_sequences(inputFileName)
+                print("Done loading \"" + inputFileName + "\"" )
+                load_sequences_into_traits()
+                print("Done loading into traits")
+                clf = train_program()
+                print("Done training")
+                seqToFile(predict_sequence(1,clf), outputFile)
+                print("Done writing to \"" + outputFileName + "\"")                
+            except Exception as inst:
+                print("Error: " + str(inst))
 
 main()
 
